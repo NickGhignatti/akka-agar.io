@@ -14,6 +14,9 @@ class MockGameStateManager(
 
   def addPlayer(player: Player): Unit =
     world = world.addPlayer(player)
+    
+  def addFood(food: Food): Unit =
+    world = world.addFood(food)
 
   def removePlayer(playerId: String): Unit =
     world = world.removePlayer(playerId)
@@ -25,12 +28,12 @@ class MockGameStateManager(
   def movePlayerDirection(id: String, dx: Double, dy: Double): Unit =
     directions = directions.updated(id, (dx, dy))
 
-  def tick(distributedGameManager: DistributedGameStateManager): Unit =
+  def tick(): Unit =
     directions.foreach:
       case (id, (dx, dy)) =>
         world.playerById(id) match
           case Some(player) =>
-            world = updateWorldAfterMovement(updatePlayerPosition(player, dx, dy), distributedGameManager)
+            world = updateWorldAfterMovement(updatePlayerPosition(player, dx, dy))
           case None =>
           // Player not found, ignore movement
 
@@ -41,7 +44,6 @@ class MockGameStateManager(
 
   private def updateWorldAfterMovement(
                                         player: Player,
-                                        distributedGameStateManager: DistributedGameStateManager
                                       ): World =
     val foodEaten = world.foods.filter(food => EatingManager.canEatFood(player, food))
     val playerEatsFood = foodEaten.foldLeft(player)((p, food) => p.grow(food))
@@ -49,9 +51,6 @@ class MockGameStateManager(
       .playersExcludingSelf(player)
       .filter(player => EatingManager.canEatPlayer(playerEatsFood, player))
     val playerEatPlayers = playersEaten.foldLeft(playerEatsFood)((p, other) => p.grow(other))
-    playersEaten.foreach(p =>
-      distributedGameStateManager.removePlayer(p.id)
-    )
     world
       .updatePlayer(playerEatPlayers)
       .removePlayers(playersEaten)
