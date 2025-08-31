@@ -39,5 +39,11 @@ case class World(
   def removePlayers(ids: Seq[Player]): World =
     copy(players = players.filterNot(p => ids.map(_.id).contains(p.id)))
 
+  def removePlayer(playerId: String): World =
+    copy(players = players.filterNot(p => playerId.equals(p.id)))
+  
   def removeFoods(ids: Seq[Food]): World =
     copy(foods = foods.filterNot(f => ids.contains(f)))
+    
+  def addPlayer(player: Player): World =
+    copy(players = players :+ player)

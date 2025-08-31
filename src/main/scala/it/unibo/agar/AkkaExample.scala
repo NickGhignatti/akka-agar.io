@@ -31,7 +31,7 @@ object PingPong:
         case Ping(_) =>
           context.log.info("Received Ping while in Pong state, ignoring")
           Behaviors.same
-@main
+
 def multipleRuns(): Unit =
   val pinger = startup("agario", 25251)(PingPong.ping())
   val ponger = startup("agario", 25252)(PingPong.pong())
